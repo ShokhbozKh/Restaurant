@@ -2,14 +2,17 @@ using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Extensions;
 using Infrastructure.Seeders;
+using Application.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Services.AddControllers();
 
-// ?? Infrastructure qatlamdagi servislarni ro‘yxatdan o‘tkazish
+// Infrastructure qatlamdagi servislarni ro‘yxatdan o‘tkazish
 //  json fayldan connection string ni o‘qib olish va db context ni ro‘yxatdan o‘tkazish
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Application qatlamdagi servislarni ro‘yxatdan o‘tkazish
+builder.Services.AddApplicationServices();
 
 
 builder.Services.AddEndpointsApiExplorer();

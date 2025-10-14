@@ -1,4 +1,6 @@
-﻿using Infrastructure.Persistence;
+﻿using Domain.Restaurants;
+using Infrastructure.Persistence;
+using Infrastructure.Repositories;
 using Infrastructure.Seeders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +22,7 @@ public static class ServiceCollectionExtensions
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         // Add Seeders
         services.AddScoped<IRestaurantSeeder, RestaurantSeeder>();
+        services.AddScoped<IRestaurantsRepository, RestaurantsRepository>();
         // Add other infrastructure services like repositories, etc.
     }
 
