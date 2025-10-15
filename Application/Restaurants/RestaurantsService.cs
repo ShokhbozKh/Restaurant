@@ -1,6 +1,7 @@
 ﻿using Application.Restaurants.Dtos;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Exceptions;
 using Domain.Restaurants;
 using Microsoft.Extensions.Logging;
 
@@ -34,7 +35,7 @@ public class RestaurantsService: IRestaurantsService
         if(restaurant == null)
         {
             _logger.LogWarning("Restaurant not found with id: {id}", id);
-            return null;
+            throw new NotFoundException($"Restaurant not found with id: {id}");
         }
         var restaurantDto = mapper.Map<RestaurantDto?>(restaurant);
         return restaurantDto;
@@ -58,7 +59,7 @@ public class RestaurantsService: IRestaurantsService
         if(entity == null)
         {
             _logger.LogWarning("Restaurant not found with id: {id}", id);
-            throw new KeyNotFoundException($"Restaurant not found with id {id}");
+            throw new NotFoundException($"Restaurant not found with id {id}");
         }
         var updatedEntity = mapper.Map(dto, entity);
         await _repository.UpdateAsync(updatedEntity);
@@ -69,7 +70,7 @@ public class RestaurantsService: IRestaurantsService
         if(entity == null)
         {
             _logger.LogWarning("Restaurant not found with id: {id}", id);
-            throw new KeyNotFoundException($"Restaurant not found with id {id}");
+            throw new NotFoundException($"Restaurant not found with id {id}");
         }
         await _repository.DeleteAsync(entity);
     }
