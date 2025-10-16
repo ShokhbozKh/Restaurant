@@ -1,6 +1,7 @@
 ﻿using Domain.Dishes;
 using Domain.Entities;
 using Domain.Restaurants;
+using Domain.Users;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Infrastructure.Seeders;
@@ -31,6 +32,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRestaurantSeeder, RestaurantSeeder>();
         services.AddScoped<IRestaurantsRepository, RestaurantsRepository>();
         services.AddScoped<IDishesRepository, DishesRepository>();
+        services.AddScoped<IUserDetailsRepository, UserDetailsRepository>();
         // Add other infrastructure services like repositories, etc.
     }
 

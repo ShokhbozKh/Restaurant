@@ -1,0 +1,13 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.User;
+
+public record CurrentUser(string UserId, string Email, IEnumerable<string> Roles)
+{
+    // bu rolni tekshirish uchun qulay usul
+    public bool IsInRole(string role) => Roles.Contains(role);
+}

@@ -92,7 +92,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Identity API minimal endpoints
-app.MapGroup("api/identity").MapIdentityApi<User>();
+app.MapGroup("api/identity")
+    .WithTags("Identity")
+    .MapIdentityApi<User>();
 
 app.MapControllers();
 

@@ -31,6 +31,7 @@ public class RestaurantsController:ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
+        var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
         var restaurant = await _service.GetByIdAsync(id);
         return Ok(restaurant);
     }

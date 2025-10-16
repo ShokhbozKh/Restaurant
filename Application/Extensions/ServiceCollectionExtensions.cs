@@ -4,6 +4,8 @@ using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Application.Dishes;
+using Application.User;
+using Application.Users;
 
 namespace Application.Extensions;
 
@@ -20,5 +22,9 @@ public static class ServiceCollectionExtensions
         services.AddAutoMapper(appAssembly);
         services.AddValidatorsFromAssembly(appAssembly)
             .AddFluentValidationAutoValidation();// bu validationni avtomatik ishlatadi
+        
+        services.AddScoped<IUserContext, UserContext>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<IUserDetailsService, UserDetailsService>();  
     }
 }
