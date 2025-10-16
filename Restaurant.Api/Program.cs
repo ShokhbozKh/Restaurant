@@ -30,10 +30,16 @@ builder.Host.UseSerilog((context, conf) =>
 
 var app = builder.Build();
 // bu yerda db migration larni avtomatik qo‘llash va dastlabki ma'lumotlarni kiritish amalga oshiriladi
-var scope = app.Services.CreateScope();
-// bu yerda db migration larni avtomatik qo‘llash
-var seeder = scope.ServiceProvider.GetRequiredService<IRestaurantSeeder>();
-await seeder.SeedAsync();
+using(var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var restaurantSeeder = scope.ServiceProvider.GetRequiredService<IRestaurantSeeder>();
+    // migration larni qo‘llash
+    dbContext.Database.Migrate();
+    // dastlabki ma'lumotlarni kiritish
+    await restaurantSeeder.SeedAsync();
+
+}
 
 // bu yerda global error handling middleware ni qo‘shish
 app.UseMiddleware<ErrorHandlingMiddleware>();

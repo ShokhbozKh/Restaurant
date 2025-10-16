@@ -1,5 +1,7 @@
 ﻿
 using Domain.Exceptions;
+using System.Net;
+using System.Text.Json;
 
 namespace Restaurants.Api.Middlewares;
 
@@ -16,21 +18,58 @@ public class ErrorHandlingMiddleware : IMiddleware
         {
             await next.Invoke(context);
         }
-        catch(NotFoundException nfEx)
-        {
-            _logger.LogWarning(nfEx, "A not found exception has occurred: {Message}", nfEx.Message);
-            context.Response.StatusCode = 404;
-            context.Response.ContentType = "application/json";
-            var response = new { error = nfEx.Message };
-            await context.Response.WriteAsJsonAsync(response);
-        }
+        
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception has occurred: {Message}", ex.Message);
-            context.Response.StatusCode = 500;
-            context.Response.ContentType = "application/json";
-            var response = new { error = "An unexpected error occurred. Please try again later." };
-            await context.Response.WriteAsJsonAsync(response);
+            await HandleExceptionAsync(context, ex); // Xatoni private metodda qayta ishlaymiz
         }
     }
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+        context.Response.ContentType = "application/json";
+
+        HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+        string message = "Internal Server Error";
+
+        // Xatolik turiga qarab status va message belgilash
+        switch (exception)
+        {
+            case NotFoundException: // Masalan, resurs topilmasa
+                statusCode = HttpStatusCode.NotFound;
+                message = exception.Message;
+                break;
+
+            case UnauthorizedAccessException: // Ruxsat yo'q
+                statusCode = HttpStatusCode.Unauthorized;
+                message = exception.Message;
+                break;
+
+            case BadRequestException: // Notog'ri argument
+                statusCode = HttpStatusCode.BadRequest;
+                message = exception.Message;
+                break;
+            case ServerErrorException: // Notog'ri argument
+                statusCode = HttpStatusCode.InternalServerError;
+                message = exception.Message;
+                break;
+
+            default: // Boshqa barcha xatolar
+                statusCode = HttpStatusCode.InternalServerError;
+                message = exception.Message; // productionda umumiy xabar berish tavsiya qilinadi
+                break;
+        }
+
+        context.Response.StatusCode = (int)statusCode;
+
+        var response = new
+        {
+            StatusCode = context.Response.StatusCode,
+            Message = message,
+            StackTrace = exception.StackTrace
+        };
+
+        var json = JsonSerializer.Serialize(response);
+        return context.Response.WriteAsync(json);
+    }
 }
+
