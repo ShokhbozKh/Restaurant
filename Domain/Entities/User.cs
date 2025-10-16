@@ -1,6 +1,9 @@
-﻿namespace Domain.Entities;
+﻿using Microsoft.AspNetCore.Identity;
 
-public class User
+namespace Domain.Entities;
+
+public class User : IdentityUser
 {
+
 
 }

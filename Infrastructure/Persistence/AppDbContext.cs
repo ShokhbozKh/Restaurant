@@ -1,9 +1,10 @@
 ﻿using Domain.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
-public class AppDbContext:DbContext
+public class AppDbContext : IdentityDbContext<User>
 {
     public virtual DbSet<Restaurant> Restaurants { get; set; }
     public virtual DbSet<Dish> Dishes { get; set; }

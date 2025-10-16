@@ -4,3 +4,18 @@ GET {{Restaurant.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+POST {{Restaurant.Api_HostAddress}}/api/Identity/register
+Content-Type: application/json
+
+{
+  "email": "shohboztuit14@gmail.com",
+  "password": "Shohboz1998@"
+}
+###
+POST {{Restaurant.Api_HostAddress}}/api/Identity/login
+Content-Type: application/json
+
+{
+  "email": "shohboztuit14@gmail.com",
+  "password": "Shohboz1998@"
+}
