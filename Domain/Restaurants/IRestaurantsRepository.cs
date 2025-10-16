@@ -15,4 +15,5 @@ public interface IRestaurantsRepository
     Task CreateAsync(Restaurant restaurant);
     Task UpdateAsync(Restaurant restaurant);
     Task DeleteAsync(Restaurant restaurant);
+    Task<bool> ExistsAsync(int restaurantId);
 }

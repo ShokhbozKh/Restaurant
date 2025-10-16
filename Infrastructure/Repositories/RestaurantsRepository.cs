@@ -46,4 +46,8 @@ public class RestaurantsRepository : IRestaurantsRepository
         _context.Restaurants.Remove(restaurant);
         await _context.SaveChangesAsync();
     }
+    public async Task<bool> ExistsAsync(int restaurantId)
+    {
+        return await _context.Restaurants.AnyAsync(r => r.Id == restaurantId);
+    }
 }

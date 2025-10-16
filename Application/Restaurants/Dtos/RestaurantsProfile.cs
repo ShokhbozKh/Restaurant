@@ -26,13 +26,22 @@ public class RestaurantsProfile : Profile
                 }));
 
         CreateMap<UpdateRestaurantDto, Restaurant>()
-            .ForMember(d => d.Address, opt => opt.MapFrom(
-                src => new Address
+            .ForMember(dest => dest.Address, opt => opt.MapFrom((src, dest) =>
+            {
+                if (dest.Address == null)
+                    dest.Address = new Address();
+
+                return new Address
                 {
-                    City = src.City,
-                    Street = src.Street,
-                    PostalCode = src.PostalCode
-                }));
+                    City = string.IsNullOrEmpty(src.City) ? dest.Address.City : src.City,
+                    Street = string.IsNullOrEmpty(src.Street) ? dest.Address.Street : src.Street,
+                    PostalCode = string.IsNullOrEmpty(src.PostalCode) ? dest.Address.PostalCode : src.PostalCode
+                };
+            }))
+            .ForAllMembers(opt =>
+            {
+                opt.Condition((src, dest, srcMember) => srcMember != null);
+            });
 
         CreateMap<Restaurant, RestaurantDto>()
             .ForMember(d=>d.City, opt=>
