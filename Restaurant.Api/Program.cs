@@ -1,51 +1,83 @@
-using Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+Ôªøusing Application.Extensions;
+using Domain.Entities;
 using Infrastructure.Extensions;
+using Infrastructure.Persistence;
 using Infrastructure.Seeders;
-using Application.Extensions;
-using Serilog;
-using Serilog.Events;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Restaurants.Api.Middlewares;
+using Serilog;
+using Restaurants.Api.Extensions;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
-// Global error handling middleware ni roëyxatdan oëtkazish
-builder.Services.AddScoped<ErrorHandlingMiddleware>();
-builder.Services.AddScoped<RequestTimeLoggingMiddleware>();
 
-// Infrastructure qatlamdagi servislarni roëyxatdan oëtkazish
-//  json fayldan connection string ni oëqib olish va db context ni roëyxatdan oëtkazish
+builder.AddPresentation();
+
+// Swagger konfiguratsiyasi
+/*
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme // bu swaggerda lock ikonka paydo bo‚Äòlishi uchun
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement // bu swaggerda lock ikonka paydo bo‚Äòlishi uchun
+    {
+        {
+            new OpenApiSecurityScheme 
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "bearerAuth"
+                }
+            },
+            [] // bu yerda scopes bo‚Äòladi, lekin bizda yo‚Äòq
+        }
+    });
+});
+*/
+//  Muhim qo‚Äòshimchalar ‚Äî Identity API uchun zarur
+builder.Services.AddDataProtection(); // IDataProtectionProvider uchun
+builder.Services.AddSingleton<TimeProvider>(TimeProvider.System); // TimeProvider uchun
+
+// Infrastructure servislar
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// Application qatlamdagi servislarni roëyxatdan oëtkazish
+// Identity API (.NET 8 minimal identity)
+builder.Services.AddIdentityCore<User>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddApiEndpoints();
+// üîí Identity uchun Bearer authentication qo‚Äòshish
+builder.Services.AddAuthentication()
+    .AddBearerToken(IdentityConstants.BearerScheme);
+// üß© Identity SignIn, Token va Manager servislari
+builder.Services.AddAuthorization();
+
+
+// Application qatlam
 builder.Services.AddApplicationServices();
 
-// swagger ni sozlash
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Serilog ni sozlash
-builder.Host.UseSerilog((context, conf) =>
-    conf.ReadFrom.Configuration(context.Configuration));
 
 var app = builder.Build();
-// bu yerda db migration larni avtomatik qoëllash va dastlabki ma'lumotlarni kiritish amalga oshiriladi
-using(var scope = app.Services.CreateScope())
+
+// Migration + Seeder
+using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var restaurantSeeder = scope.ServiceProvider.GetRequiredService<IRestaurantSeeder>();
-    // migration larni qoëllash
+
     dbContext.Database.Migrate();
-    // dastlabki ma'lumotlarni kiritish
     await restaurantSeeder.SeedAsync();
-
 }
-
-// bu yerda global error handling middleware ni qoëshish
+// Middleware lar
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestTimeLoggingMiddleware>();
 
-// bu yerda http soërovlarni log qilish uchun middleware ni qoëshish
 app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
@@ -55,8 +87,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+// üîê Auth middleware
+app.UseAuthentication();
 app.UseAuthorization();
+
+// Identity API minimal endpoints
+app.MapGroup("api/identity").MapIdentityApi<User>();
 
 app.MapControllers();
 

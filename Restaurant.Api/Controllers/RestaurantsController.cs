@@ -1,5 +1,6 @@
 ﻿using Application.Restaurants;
 using Application.Restaurants.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -7,6 +8,7 @@ namespace Restaurants.Api.Controllers;
 
 [ApiController]
 [Route("api/restaurants")]
+[Authorize]
 public class RestaurantsController:ControllerBase
 {
     private readonly IRestaurantsService _service;
@@ -17,6 +19,7 @@ public class RestaurantsController:ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         var restaurants = await _service.GetAllAsync();
@@ -25,6 +28,7 @@ public class RestaurantsController:ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
         var restaurant = await _service.GetByIdAsync(id);
@@ -33,6 +37,7 @@ public class RestaurantsController:ControllerBase
     [HttpGet("list")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<IActionResult> GetList()
     {
         var list = await _service.GetListAsync();

@@ -1,8 +1,11 @@
 ﻿using Domain.Dishes;
+using Domain.Entities;
 using Domain.Restaurants;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Infrastructure.Seeders;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +25,8 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
             .EnableSensitiveDataLogging());// bu loglarda ma'lumotlarni ko'rsatadi, faqat developmentda ishlatish kerak
+
+
         // Add Seeders
         services.AddScoped<IRestaurantSeeder, RestaurantSeeder>();
         services.AddScoped<IRestaurantsRepository, RestaurantsRepository>();
