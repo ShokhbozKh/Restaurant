@@ -1,4 +1,5 @@
 ﻿using Application.Restaurants.Dtos;
+using Application.Users;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Exceptions;
@@ -12,11 +13,13 @@ public class RestaurantsService: IRestaurantsService
     private readonly IRestaurantsRepository _repository;
     private readonly ILogger<RestaurantsService> _logger;
     private readonly IMapper mapper;
-    public RestaurantsService(IRestaurantsRepository restaurantsRepository, ILogger<RestaurantsService> logger, IMapper mapper )
+    private readonly IUserContext _userContext;
+    public RestaurantsService(IRestaurantsRepository restaurantsRepository, ILogger<RestaurantsService> logger, IMapper mapper,IUserContext userContext )
     {
         _repository = restaurantsRepository;
         _logger = logger;
         this.mapper = mapper;
+        _userContext = userContext;
     }
 
     public async Task<IEnumerable<RestaurantDto>> GetAllAsync()
@@ -49,7 +52,11 @@ public class RestaurantsService: IRestaurantsService
     }
     public async Task<int> CreateAsync(CreateRestaurantDto dto)
     {
+        var currentUser = _userContext.GetCurrentUser(); // bu yerda foydalanuvchini olish
+
+        _logger.LogInformation("User {user} is creating a new restaurant", currentUser?.Email ?? "Unknown");
         var entity = mapper.Map<Restaurant>(dto);
+        entity.OwnerId = currentUser!.UserId;
         await _repository.CreateAsync(entity);
         return entity.Id;
     }

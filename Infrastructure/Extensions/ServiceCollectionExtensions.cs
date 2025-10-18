@@ -2,6 +2,7 @@
 using Domain.Entities;
 using Domain.Restaurants;
 using Domain.Users;
+using Infrastructure.Authorization;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Infrastructure.Seeders;
@@ -33,6 +34,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRestaurantsRepository, RestaurantsRepository>();
         services.AddScoped<IDishesRepository, DishesRepository>();
         services.AddScoped<IUserDetailsRepository, UserDetailsRepository>();
+
+        //services.AddAuthorizationBuilder()
+        //    .AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"))
+        //    .AddPolicy("UserOnly", policy => policy.RequireRole("User"));
+
         // Add other infrastructure services like repositories, etc.
     }
 

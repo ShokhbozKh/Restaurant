@@ -1,4 +1,5 @@
-﻿using Application.User.Dtos;
+﻿using Application.AssignUsers;
+using Application.Users.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,4 +11,5 @@ namespace Application.Users;
 public interface IUserDetailsService
 {
     Task UpdateUserDetailsAsync(UpdateUserDetailsDto userDto, CancellationToken ct);
+    Task AssignUserRoleAsync(AssignUserRole role, CancellationToken ct);
 }

@@ -10,37 +10,12 @@ using Restaurants.Api.Middlewares;
 using Serilog;
 using Restaurants.Api.Extensions;
 using System;
+using Infrastructure.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddPresentation();
 
-// Swagger konfiguratsiyasi
-/*
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme // bu swaggerda lock ikonka paydo bo‘lishi uchun
-    {
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement // bu swaggerda lock ikonka paydo bo‘lishi uchun
-    {
-        {
-            new OpenApiSecurityScheme 
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "bearerAuth"
-                }
-            },
-            [] // bu yerda scopes bo‘ladi, lekin bizda yo‘q
-        }
-    });
-});
-*/
 //  Muhim qo‘shimchalar — Identity API uchun zarur
 builder.Services.AddDataProtection(); // IDataProtectionProvider uchun
 builder.Services.AddSingleton<TimeProvider>(TimeProvider.System); // TimeProvider uchun
@@ -50,6 +25,8 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Identity API (.NET 8 minimal identity)
 builder.Services.AddIdentityCore<User>()
+    .AddRoles<IdentityRole>() // Role menejment uchun yani rollar bilan ishlash  
+    .AddClaimsPrincipalFactory<RestaurantsUserClaimsPrincipalFactory>() // Custom ClaimsPrincipalFactory
     .AddEntityFrameworkStores<AppDbContext>()
     .AddApiEndpoints();
 // 🔒 Identity uchun Bearer authentication qo‘shish

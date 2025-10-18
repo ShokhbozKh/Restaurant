@@ -1,11 +1,12 @@
-﻿using Application.Restaurants;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Application.AssignUsers;
+using Application.Dishes;
+using Application.Restaurants;
+using Application.Users;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Application.Dishes;
-using Application.User;
-using Application.Users;
+using Microsoft.Extensions.DependencyInjection;
+using Application.AssignUsers;
 
 namespace Application.Extensions;
 
@@ -26,5 +27,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserContext, UserContext>();
         services.AddHttpContextAccessor();
         services.AddScoped<IUserDetailsService, UserDetailsService>();  
+        services.AddScoped<IAssignUserService, AssignUserService>();
     }
 }

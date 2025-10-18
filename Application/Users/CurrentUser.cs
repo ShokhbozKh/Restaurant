@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.User;
+namespace Application.Users;
 
 public record CurrentUser(string UserId, string Email, IEnumerable<string> Roles)
 {
