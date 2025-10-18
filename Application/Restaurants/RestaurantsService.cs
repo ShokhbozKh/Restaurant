@@ -1,6 +1,8 @@
-﻿using Application.Restaurants.Dtos;
+﻿using Application.Common;
+using Application.Restaurants.Dtos;
 using Application.Users;
 using AutoMapper;
+using Domain.Commands;
 using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Restaurants;
@@ -29,6 +31,18 @@ public class RestaurantsService: IRestaurantsService
         var restaurantDtos = mapper.Map<IEnumerable<RestaurantDto>>(restaurants);
 
         return restaurantDtos;
+    }
+    public async Task<PagedResult<RestaurantDto>> GetPagedResultAsync(GetAllRestaurantsQuery query)
+    {
+        _logger.LogInformation("Getting all restaurants");
+        var (restaurants, totalCount) = await _repository.GetPagedAsync(query); // bu yerda tuple qabul qilyapmiz
+
+        var items = mapper.Map<IEnumerable<RestaurantDto>>(restaurants);
+        // bu yerda paging qilyapmiz
+
+        var resultPeged = new PagedResult<RestaurantDto>(items, totalCount, query.PageSize, query.PageNumber);
+
+        return resultPeged;
     }
 
     public async Task<RestaurantDto?> GetByIdAsync(int id)

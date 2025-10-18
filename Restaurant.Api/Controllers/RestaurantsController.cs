@@ -1,5 +1,7 @@
-﻿using Application.Restaurants;
+﻿using Application.Common;
+using Application.Restaurants;
 using Application.Restaurants.Dtos;
+using Domain.Commands;
 using Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,16 +23,25 @@ public class RestaurantsController:ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<IEnumerable<RestaurantDto>>> GetAll()
     {
         var restaurants = await _service.GetAllAsync();
+        return Ok(restaurants);
+    }
+    [HttpGet("PagedRestaurants")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
+    public async Task<ActionResult<PagedResult<RestaurantDto>>> GetPagedResult([FromQuery] GetAllRestaurantsQuery query)
+    {
+        var restaurants = await _service.GetPagedResultAsync(query);
         return Ok(restaurants);
     }
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<ActionResult<RestaurantDto>> GetById(int id)
     {
         //var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
         var restaurant = await _service.GetByIdAsync(id);
