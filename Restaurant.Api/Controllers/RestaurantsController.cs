@@ -1,5 +1,8 @@
-﻿using Application.Restaurants;
+﻿using Application.Common;
+using Application.Restaurants;
 using Application.Restaurants.Dtos;
+using Domain.Commands;
+using Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -20,24 +23,34 @@ public class RestaurantsController:ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<IEnumerable<RestaurantDto>>> GetAll()
     {
         var restaurants = await _service.GetAllAsync();
+        return Ok(restaurants);
+    }
+    [HttpGet("PagedRestaurants")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
+    public async Task<ActionResult<PagedResult<RestaurantDto>>> GetPagedResult([FromQuery] GetAllRestaurantsQuery query)
+    {
+        var restaurants = await _service.GetPagedResultAsync(query);
         return Ok(restaurants);
     }
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<ActionResult<RestaurantDto>> GetById(int id)
     {
+        //var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
         var restaurant = await _service.GetByIdAsync(id);
         return Ok(restaurant);
     }
     [HttpGet("list")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [AllowAnonymous]
+    [Authorize(Roles = $"{UserRoles.User}")]
     public async Task<IActionResult> GetList()
     {
         var list = await _service.GetListAsync();
@@ -46,6 +59,7 @@ public class RestaurantsController:ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(Roles =UserRoles.Admin)]
     public async Task<IActionResult> Create([FromBody] CreateRestaurantDto dto)
     {
         if(!ModelState.IsValid)
@@ -58,6 +72,8 @@ public class RestaurantsController:ControllerBase
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
+    [Authorize(Roles = $"{UserRoles.Owner},{UserRoles.Manager}")] // yoki [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateRestaurantDto dto)
     {
         if(!ModelState.IsValid)
@@ -70,6 +86,7 @@ public class RestaurantsController:ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(Roles = UserRoles.Owner)]
     public async Task<IActionResult> Delete(int id)
     {
         await _service.DeleteAsync(id);

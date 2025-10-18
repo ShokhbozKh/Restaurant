@@ -1,7 +1,10 @@
-﻿using Domain.Entities;
+﻿using Application.Common;
+using Domain.Commands;
+using Domain.Entities;
 using Domain.Restaurants;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories;
 
@@ -14,11 +17,62 @@ public class RestaurantsRepository : IRestaurantsRepository
     }
     public async Task<IEnumerable<Restaurant>> GetAllAsync()
     {
-        var result = await _context.Restaurants
-            .Include(d=> d.Dishes) 
+        var baseQuery = await _context.Restaurants
+            .Include(d => d.Dishes)
             .ToListAsync();
-        return result;
+
+        return baseQuery;
     }
+    public async Task<(IEnumerable<Restaurant>, int)> GetPagedAsync(GetAllRestaurantsQuery query)
+    {
+        var baseQuery = _context.Restaurants
+            .Include(r => r.Dishes)
+            .AsQueryable();
+
+        // Search
+        var search = query.Search?.ToLower().Trim();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            baseQuery = baseQuery.Where(r =>
+                r.Name.ToLower().Contains(search) ||
+                r.Description.ToLower().Contains(search));
+        }
+
+        // Total count (before paging)
+        var totalCount = await baseQuery.CountAsync();
+
+        // Sorting
+        if (!string.IsNullOrEmpty(query.SortBy))
+        {
+            var columnSelectors = new Dictionary<string, Expression<Func<Restaurant, object>>>(StringComparer.OrdinalIgnoreCase)
+        {
+            { nameof(Restaurant.Name), r => r.Name },
+            { nameof(Restaurant.Category), r => r.Category },
+            { nameof(Restaurant.Description), r => r.Description }
+        };
+
+            if (columnSelectors.TryGetValue(query.SortBy, out var selectedColumn))
+            {
+                baseQuery = query.SortDirection == SortDirection.Descending
+                    ? baseQuery.OrderByDescending(selectedColumn)
+                    : baseQuery.OrderBy(selectedColumn);
+            }
+        }
+        else
+        {
+            // Default sort (agar SortBy berilmagan bo‘lsa)
+            baseQuery = baseQuery.OrderBy(r => r.Id);
+        }
+
+        // Paging
+        var items = await baseQuery
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync();
+
+        return (items, totalCount); // return items along with total count
+    }
+
     public async Task<Restaurant?> GetByIdAsync(int id)
     {
         var result = await _context.Restaurants

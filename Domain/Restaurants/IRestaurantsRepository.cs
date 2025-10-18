@@ -1,15 +1,12 @@
-﻿using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.Commands;
+using Domain.Entities;
 
 namespace Domain.Restaurants;
 
 public interface IRestaurantsRepository
 {
     Task<IEnumerable<Restaurant>> GetAllAsync();
+    Task<(IEnumerable<Restaurant>,int)> GetPagedAsync(GetAllRestaurantsQuery query);
     Task<Restaurant?> GetByIdAsync(int id);
     Task<IEnumerable<Restaurant>> GetListAsync();
     Task CreateAsync(Restaurant restaurant);
