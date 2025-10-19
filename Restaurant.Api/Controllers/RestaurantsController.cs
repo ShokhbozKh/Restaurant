@@ -59,7 +59,7 @@ public class RestaurantsController:ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Authorize(Roles =UserRoles.Admin)]
+    [Authorize(Roles =$"{UserRoles.Admin},{UserRoles.Owner}")]
     public async Task<IActionResult> Create([FromBody] CreateRestaurantDto dto)
     {
         if(!ModelState.IsValid)
@@ -86,7 +86,7 @@ public class RestaurantsController:ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Authorize(Roles = UserRoles.Owner)]
+    [Authorize(Roles = $"{UserRoles.Owner},{UserRoles.Manager}")]
     public async Task<IActionResult> Delete(int id)
     {
         await _service.DeleteAsync(id);

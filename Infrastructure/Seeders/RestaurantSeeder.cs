@@ -16,45 +16,66 @@ public class RestaurantSeeder: IRestaurantSeeder
     }
     public async Task SeedAsync()
     {
+        if(_context.Database.GetPendingMigrations().Any()) // bu yerda pending migration bor yoki yoq ekanligini tekshiradi
+        {
+            await _context.Database.MigrateAsync(); // agar bor bolsa migration larni bajaradi
+        }
+        await SeedOwnersAsync();
         await SeederRestaurantAsync();
         await SeederDishAsync();
 
-        if(! _context.Roles.Any())
+        if (! _context.Roles.Any())
         {
             var roles = GetRoles();
             await _context.Roles.AddRangeAsync(roles);
             await _context.SaveChangesAsync();
         }
     }
+    private async Task SeedOwnersAsync()
+    {
+        // Agar Owners allaqachon bo'lsa, yangi qo'shmaymiz
+        if (!_context.Users.Any(u => u.UserName.StartsWith("owner")))
+        {
+            var owners = new List<User>();
+            for (int i = 1; i <= 10; i++)
+            {
+                var owner = new User
+                {
+                    UserName = $"owner{i}",
+                    Email = $"owner{i}@seed.com",
+                    // Agar Identity ishlatsa, password hash kerak bo'ladi
+                    NormalizedUserName = $"OWNER{i}",
+                    NormalizedEmail = $"OWNER{i}@SEED.COM",
+                    SecurityStamp = Guid.NewGuid().ToString()
+                };
+                owners.Add(owner);
+            }
+
+            _context.Users.AddRange(owners);
+            await _context.SaveChangesAsync(); // Shu yerda ID lar yaratiladi
+        }
+    }
     private IEnumerable<IdentityRole> GetRoles()
     {
         var roles = new List<IdentityRole>
-        {
-            new IdentityRole(UserRoles.User)
-            {
-                NormalizedName = UserRoles.User.ToUpper()
-            },
-            new IdentityRole(UserRoles.Admin)
-            {
-                NormalizedName = UserRoles.Admin.ToUpper()
-            },
-            new IdentityRole(UserRoles.Manager)
-            {
-                NormalizedName = UserRoles.User.ToUpper()
-            },
-            new IdentityRole(UserRoles.Owner)
-            {
-                NormalizedName = UserRoles.Owner.ToUpper()
-            }
-
-        };
+    {
+        new IdentityRole(UserRoles.User)    { NormalizedName = UserRoles.User.ToUpper() },
+        new IdentityRole(UserRoles.Admin)   { NormalizedName = UserRoles.Admin.ToUpper() },
+        new IdentityRole(UserRoles.Manager) { NormalizedName = UserRoles.Manager.ToUpper() },
+        new IdentityRole(UserRoles.Owner)   { NormalizedName = UserRoles.Owner.ToUpper() }
+    };
         return roles;
     }
-             
-          
+
+
     private async Task SeederRestaurantAsync()
     {
         var userIds = _context.Users.Select(u => u.Id).ToList();
+        User owner = new User
+        {
+            UserName = "owner1",
+            Email = "seed-user@test.com"
+        };
 
         if (!_context.Restaurants.Any())
         {
