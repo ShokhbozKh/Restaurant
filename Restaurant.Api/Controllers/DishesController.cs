@@ -1,11 +1,14 @@
 ﻿using Application.Dishes;
 using Application.Dishes.Dtos;
+using Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Restaurants.Api.Controllers;
 [ApiController]
 [Route("api/restaurants/{restaurantId}/dishes")]
+[Authorize]
 public class DishesController: ControllerBase
 {
     private readonly IDishesService _service;
@@ -16,6 +19,7 @@ public class DishesController: ControllerBase
     }
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAllDish([FromRoute]int restaurantId)
     {
         var dishes = await  _service.GetAllAsync(restaurantId);
@@ -24,6 +28,7 @@ public class DishesController: ControllerBase
     [HttpGet("{dishId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     public async Task<IActionResult> GetDishById([FromRoute]int restaurantId, [FromRoute]int dishId)
     {
         var dish = await _service.GetByIdAsync(restaurantId, dishId);
@@ -31,6 +36,7 @@ public class DishesController: ControllerBase
     }
     [HttpGet("list")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(UserRoles.User)]
     public async Task<IActionResult> GetDishList([FromRoute]int restaurantId)
     {
         var list = await _service.GetListAsync(restaurantId);
@@ -39,6 +45,7 @@ public class DishesController: ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(Roles =$"{UserRoles.Admin},{UserRoles.Manager},{UserRoles.Owner}")]
     public async Task<IActionResult> CreateDish([FromRoute]int restaurantId, [FromBody] CreateDishDto dto)
     {
         var dishId = await  _service.CreateAsync(restaurantId, dto);
@@ -47,6 +54,7 @@ public class DishesController: ControllerBase
     [HttpPut("{dishId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(Roles = $"{UserRoles.Manager},{UserRoles.Owner}")]
     public async Task<IActionResult> UpdateDish([FromRoute]int restaurantId, [FromRoute]int dishId, [FromBody] UpdateDishDto dto)
     {
         await _service.UpdateAsync(restaurantId, dishId, dto);
@@ -55,6 +63,7 @@ public class DishesController: ControllerBase
     [HttpDelete("{dishId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = $"{UserRoles.Manager},{UserRoles.Owner}")]
     public async Task<IActionResult> DeleteDish([FromRoute]int restaurantId, [FromRoute]int dishId)
     {
         await _service.DeleteAsync(restaurantId, dishId);
@@ -63,6 +72,7 @@ public class DishesController: ControllerBase
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = $"{UserRoles.Owner}")]
     public async Task<IActionResult> DeleteAllDishes([FromRoute]int restaurantId)
     {
         await _service.DeleteDishesForRestaurantAsync(restaurantId);

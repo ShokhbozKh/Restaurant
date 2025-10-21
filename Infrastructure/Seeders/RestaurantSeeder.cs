@@ -16,7 +16,7 @@ public class RestaurantSeeder: IRestaurantSeeder
     }
     public async Task SeedAsync()
     {
-        if(_context.Database.GetPendingMigrations().Any()) // bu yerda pending migration bor yoki yoq ekanligini tekshiradi
+        if(!_context.Database.GetPendingMigrations().Any()) // bu yerda pending migration bor yoki yoq ekanligini tekshiradi
         {
             await _context.Database.MigrateAsync(); // agar bor bolsa migration larni bajaradi
         }
